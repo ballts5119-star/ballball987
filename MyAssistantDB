@@ -1,0 +1,40 @@
+# Import library ที่จำเป็น
+from flask import Flask, request, abort
+from line_bot_sdk import LineBotApi, WebhookHandler
+# ... และ library สำหรับเชื่อมต่อ Google Sheets (gspread)
+
+# ตั้งค่าต่างๆ
+line_bot_api = LineBotApi('YOUR_CHANNEL_ACCESS_TOKEN')
+handler = WebhookHandler('YOUR_CHANNEL_SECRET')
+
+# นี่คือส่วนของ Webhook หรือ "กริ่งประตู"
+@app.route("/callback", methods=['POST'])
+def callback():
+    # ... โค้ดสำหรับยืนยันตัวตน ...
+    return 'OK'
+
+# ส่วนจัดการข้อความที่ได้รับ
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    msg = event.message.text # ข้อความที่ผู้ใช้ส่งมา
+
+    if msg.startswith('#ซื้อ'):
+        # แยกข้อมูล สินค้า, จำนวน, ราคา ออกจากข้อความ
+        # แล้วนำไปบันทึกลง Google Sheets ในแท็บ "Orders"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='บันทึกรายการซื้อเรียบร้อย!'))
+
+    elif msg.startswith('#งาน'):
+        # แยกข้อมูล ชื่อคน, ชื่องาน
+        # แล้วนำไปบันทึกลง Google Sheets ในแท็บ "Tasks"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='มอบหมายงานเรียบร้อย!'))
+
+    elif msg == '#สรุปยอด':
+        # ไปดึงข้อมูลจาก Google Sheets แท็บ "Orders" ของวันนี้
+        # ทำการบวกลบเลข แล้วสร้างข้อความสรุป
+        summary_text = "สรุปยอดวันนี้: ซื้อ 5,000 บาท ขาย 8,000 บาท"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=summary_text))
+
+    else:
+        # ถ้าเป็นข้อความทั่วไป ให้บันทึกลง Google Sheets แท็บ "DailyChat"
+        # อาจจะไม่ต้องตอบกลับทุกครั้งเพื่อไม่ให้ดูรก
+        pass
