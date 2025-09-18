@@ -1,0 +1,10 @@
+# ... ส่วนของ handle_message ...
+    elif msg == '#สรุปประชุม':
+        # 1. ดึงข้อมูลแชททั้งหมดของวันนี้จาก Google Sheets
+        all_chats_today = get_chats_from_sheets()
+
+        # 2. ส่งข้อมูลไปให้ Gemini API
+        summary = call_gemini_api("ช่วยสรุปบทสนทนาเหล่านี้ให้หน่อย: " + all_chats_today)
+
+        # 3. ส่งคำตอบกลับไปใน LINE
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=summary))
